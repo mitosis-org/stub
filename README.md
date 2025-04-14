@@ -1,66 +1,45 @@
-## Foundry
+# Stub
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
-
-Foundry consists of:
-
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
-
-## Documentation
-
-https://book.getfoundry.sh/
+A contract that allows you to stub function calls.
 
 ## Usage
 
-### Build
+```solidity
 
-```shell
-$ forge build
-```
+import { Test } from '@std/Test.sol';
 
-### Test
+import { Stub } from '@stub/Stub.sol';
+import { IStubManager } from '@stub/interface/IStubManager.sol';
+import { IStubInspector } from '@stub/interface/IStubInspector.sol';
 
-```shell
-$ forge test
-```
+import { IERC20 } from '@oz/interfaces/IERC20.sol';
 
-### Format
+contract A is Test {
+  address alice = makeAddr('alice');
 
-```shell
-$ forge fmt
-```
+  address stub;
+  IStubManager stubM;
+  IStubInspector stubI;
 
-### Gas Snapshots
+  function setUp() public {
+    stub = address(new Stub('Test'));
+    stubM = IStubManager(stub);
+    stubI = IStubInspector(stub);
+  }
 
-```shell
-$ forge snapshot
-```
+  function test_simple() public {
+    stubM.setOk(abi.encodeCall(IERC20.transfer, (bob, 100)), abi.encode(true));
 
-### Anvil
+    vm.startPrank(alice);
 
-```shell
-$ anvil
-```
+    IERC20 erc20 = IERC20(stub);
+    erc20.transfer(bob, 100);
 
-### Deploy
+    vm.stopPrank();
 
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
+    stubI.expectOk(abi.encodeCall(IERC20.transfer, (bob, 100)));
+    assertEq(stubI.getCallCount(abi.encodeCall(IERC20.transfer, (bob, 100))), 1);
+  }
+}
 
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
 ```

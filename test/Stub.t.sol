@@ -18,34 +18,22 @@ import { IStubManager } from '../src/interface/IStubManager.sol';
 import { IStubInspector } from '../src/interface/IStubInspector.sol';
 import { LibStubERC20 } from '../src/helper/LibStubERC20.sol';
 
-contract DeployStub {
-  function deploy(string calldata name) external returns (address) {
-    Stub stub = new Stub(
-      name,
-      msg.sender,
-      msg.sender, //
-      address(new StubManager()),
-      address(new StubExecutor()),
-      address(new StubInspector())
-    );
-
-    return address(stub);
-  }
-}
-
 contract StubTest is Test {
   using LibStubERC20 for address;
 
-  DeployStub deployer;
   address stub;
+  IStubManager stubM;
+  IStubInspector stubI;
 
   address alice = makeAddr('alice');
   address bob = makeAddr('bob');
 
   function setUp() public {
-    deployer = new DeployStub();
-    stub = deployer.deploy('TestERC20');
+    stub = address(new Stub('TestERC20'));
     stub.initStubERC20('Test', 'TST', 18);
+
+    stubM = IStubManager(stub);
+    stubI = IStubInspector(stub);
   }
 
   function test_init() public {
@@ -72,8 +60,8 @@ contract StubTest is Test {
 
     vm.stopPrank();
 
-    IStubInspector stubI = IStubInspector(stub);
     stubI.expectOk(IERC20.transfer.selector);
+    stubI.expectOk(abi.encodeCall(IERC20.transfer, (bob, 100)));
     assertEq(stubI.getCallCount(IERC20.transfer.selector), 1);
     assertEq(stubI.getCallCount(abi.encodeCall(IERC20.transfer, (bob, 100))), 1);
     assertEq(stubI.getCallCount(abi.encodeCall(IERC20.transfer, (bob, 200))), 0);
@@ -89,7 +77,6 @@ contract StubTest is Test {
 
     vm.stopPrank();
 
-    IStubInspector stubI = IStubInspector(stub);
     vm.expectRevert(_errNotACall(IERC20.balanceOf.selector, 'balanceOf'));
     stubI.expectOk(IERC20.balanceOf.selector);
 
@@ -102,7 +89,7 @@ contract StubTest is Test {
 
   function test_call_bubbling() public {
     bytes memory calldata_ = abi.encodeWithSignature('asdf(string)', 'input');
-    IStubManager(stub).setOk(calldata_, abi.encode('output'));
+    stubM.setOk(calldata_, abi.encode('output'));
 
     // call 'asdf' with the account who has inspector and manager roles
     (bool ok, bytes memory ret) = stub.call(calldata_);

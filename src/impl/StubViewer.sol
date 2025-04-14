@@ -62,15 +62,21 @@ abstract contract StubViewer is IStubViewer, StubImplBase, StubStorage {
   function _getCall(StorageV1 storage $, uint256 offset, bytes4 sig) internal view returns (Log memory) {
     Func storage func = $.funcs[sig];
     require(func.isCall, NotACall(sig, func.name));
+
     Log[] storage logs = func.call_.logs;
+    require(logs.length > 0, NoCalls(sig));
+
     return logs[logs.length - 1 - offset];
   }
 
   function _getCall(StorageV1 storage $, uint256 offset, bytes calldata data) internal view returns (Log memory) {
     Func storage func = $.funcs[bytes4(data[0:4])];
     require(func.isCall, NotACall(bytes4(data[0:4]), func.name));
+
     Log[] storage logs = func.call_.logs;
     uint256[] storage ids = func.call_.byArgs[data];
+    require(ids.length > 0, NoCalls(bytes4(data[0:4])));
+
     return logs[ids[ids.length - 1 - offset]];
   }
 }

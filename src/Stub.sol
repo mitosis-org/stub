@@ -4,6 +4,9 @@ pragma solidity ^0.8.0;
 import { console } from '@std/console.sol';
 
 import { StubStorage } from './shared/StubStorage.sol';
+import { StubManager } from './impl/StubManager.sol';
+import { StubInspector } from './impl/StubInspector.sol';
+import { StubExecutor } from './impl/StubExecutor.sol';
 import { IStubEvents } from './interface/IStubEvents.sol';
 import { IStubErrors } from './interface/IStubErrors.sol';
 
@@ -13,22 +16,15 @@ contract Stub is IStubEvents, StubStorage {
   /// @dev keccak256(abi.encodeWithSelector(IStubErrors.NotImplemented.selector))
   bytes32 private constant ERR_NOT_IMPLEMENTED = 0xdb12950338915ad5275770347f72282296a9ecc3bed09f9d1d23051c469e3fad;
 
-  constructor(
-    string memory _name,
-    address _manager,
-    address _inspector,
-    address _managerImpl,
-    address _executorImpl,
-    address _inspectorImpl
-  ) {
+  constructor(string memory _name) {
     StorageV1 storage $ = _getStorageV1();
 
     $.name = _name;
-    $.manager = _manager;
-    $.inspector = _inspector;
-    $.managerImpl = _managerImpl;
-    $.executorImpl = _executorImpl;
-    $.inspectorImpl = _inspectorImpl;
+    $.manager = msg.sender;
+    $.inspector = msg.sender;
+    $.managerImpl = address(new StubManager());
+    $.executorImpl = address(new StubExecutor());
+    $.inspectorImpl = address(new StubInspector());
   }
 
   receive() external payable {

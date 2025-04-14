@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import { console } from '@std/console.sol';
+
 import { IStubErrors } from '../interface/IStubErrors.sol';
 import { IStubInspector } from '../interface/IStubInspector.sol';
 import { StubViewer } from './StubViewer.sol';
@@ -87,8 +89,14 @@ contract StubInspector is IStubInspector, StubViewer {
 
   function _expect(uint256 offset, bytes4 sig, bool revert_, uint256 value) internal view returns (Ret memory) {
     StorageV1 storage $ = _getStorageV1();
-    Log memory log = _getCall($, offset, sig);
 
+    Func storage func = $.funcs[sig];
+    if (!func.isCall) _revertNotACall($, sig);
+
+    Log[] storage logs = func.call_.logs;
+    if (logs.length == 0) _revertNoCalls($, sig);
+
+    Log memory log = logs[logs.length - 1 - offset];
     if (log.ret.revert_ != revert_) _revertNotMatchedBySig($, sig, revert_, value, log);
     if (log.value != value) _revertNotMatchedBySig($, sig, revert_, value, log);
 
@@ -96,9 +104,16 @@ contract StubInspector is IStubInspector, StubViewer {
   }
 
   function _expect(uint256 offset, bytes calldata data, bool revert_, uint256 value) internal view returns (Ret memory) {
+    bytes4 sig = bytes4(data[:4]);
     StorageV1 storage $ = _getStorageV1();
-    Log memory log = _getCall($, offset, data);
 
+    Func storage func = $.funcs[sig];
+    if (!func.isCall) _revertNotACall($, sig);
+
+    Log[] storage logs = func.call_.logs;
+    if (logs.length == 0) _revertNoCalls($, sig);
+
+    Log memory log = logs[logs.length - 1 - offset];
     if (log.ret.revert_ != revert_) _revertNotMatchedByArgs($, data, revert_, value, log);
     if (log.value != value) _revertNotMatchedByArgs($, data, revert_, value, log);
 
@@ -106,7 +121,19 @@ contract StubInspector is IStubInspector, StubViewer {
   }
 
   function _doBeforeRevert(StorageV1 storage $, bytes4 sig) internal view {
+    console.log('>>>>>>>> TRACE <<<<<<<<<');
     $.funcs[sig].print('', 0);
+    console.log('<<<<<<<< TRACE <<<<<<<<<');
+  }
+
+  function _revertNotACall(StorageV1 storage $, bytes4 sig) internal view {
+    _doBeforeRevert($, sig);
+    revert IStubErrors.NotACall(sig, $.funcs[sig].name);
+  }
+
+  function _revertNoCalls(StorageV1 storage $, bytes4 sig) internal view {
+    _doBeforeRevert($, sig);
+    revert IStubErrors.NoCalls(sig);
   }
 
   function _revertNotMatchedByArgs(
