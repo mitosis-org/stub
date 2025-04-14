@@ -25,6 +25,7 @@ jobs:
 
       - name: run update
         run: |
+          git config --global --add safe.directory /__w/stub/stub
           git fetch
           git checkout origin/main src
           git config user.name "github-actions[bot]"
