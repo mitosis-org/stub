@@ -2,6 +2,11 @@
 
 A contract that allows you to stub function calls.
 
+## List of Helpers
+
+- [ERC20](./src/helper/LibStubERC20.sol)
+- [ERC4626](./src/helper/LibStubERC4626.sol)
+
 ## Usage
 
 ```solidity
@@ -9,36 +14,47 @@ A contract that allows you to stub function calls.
 import { Test } from '@std/Test.sol';
 
 import { Stub } from '@stub/Stub.sol';
-import { IStubManager } from '@stub/interface/IStubManager.sol';
-import { IStubInspector } from '@stub/interface/IStubInspector.sol';
+import { LibStubERC20 } from '@stub/helper/LibStubERC20.sol';
 
 import { IERC20 } from '@oz/interfaces/IERC20.sol';
+import { IERC20Metadata } from '@oz/interfaces/IERC20Metadata.sol';
 
 contract A is Test {
+  using LibStubERC20 for address;
+
   address alice = makeAddr('alice');
 
   address stub;
-  IStubManager stubM;
-  IStubInspector stubI;
+  IERC20Metadata erc20;
 
   function setUp() public {
     stub = address(new Stub('Test'));
-    stubM = IStubManager(stub);
-    stubI = IStubInspector(stub);
+    stub.initStubERC20('Test', 'TST', 18);
+
+    erc20 = IERC20Metadata(stub);
   }
 
-  function test_simple() public {
-    stubM.setOk(abi.encodeCall(IERC20.transfer, (bob, 100)), abi.encode(true));
-
+  function test_init() public {
     vm.startPrank(alice);
 
-    IERC20 erc20 = IERC20(stub);
-    erc20.transfer(bob, 100);
+    assertEq(erc20.name(), 'Test');
+    assertEq(erc20.symbol(), 'TST');
+    assertEq(erc20.decimals(), 18);
 
     vm.stopPrank();
+  }
 
+  function test_call_simple() public {
+    stub.setRetERC20Transfer(bob, 100);
+
+    vm.prank(alice);
+    erc20.transfer(bob, 100);
+
+    stubI.expectOk(IERC20.transfer.selector);
     stubI.expectOk(abi.encodeCall(IERC20.transfer, (bob, 100)));
+    assertEq(stubI.getCallCount(IERC20.transfer.selector), 1);
     assertEq(stubI.getCallCount(abi.encodeCall(IERC20.transfer, (bob, 100))), 1);
+    assertEq(stubI.getCallCount(abi.encodeCall(IERC20.transfer, (bob, 200))), 0);
   }
 }
 
