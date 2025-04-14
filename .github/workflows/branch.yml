@@ -8,12 +8,7 @@ on:
 jobs:
   clean-branch:
     name: update clean branch
-    runs-on: arc-runner-set
-    container:
-      image: asia-northeast3-docker.pkg.dev/manythings-mitosis/docker-images/arc-runner-alpine
-      credentials:
-        username: _json_key
-        password: ${{ secrets.GOOGLE_CREDENTIAL }}
+    runs-on: ubuntu-latest
 
     permissions:
       contents: write
