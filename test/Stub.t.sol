@@ -16,14 +16,14 @@ import { IStubErrors } from '../src/interface/IStubErrors.sol';
 import { IStubViewer } from '../src/interface/IStubViewer.sol';
 import { IStubManager } from '../src/interface/IStubManager.sol';
 import { IStubInspector } from '../src/interface/IStubInspector.sol';
+import { LibStub } from '../src/helper/LibStub.sol';
 import { LibStubERC20 } from '../src/helper/LibStubERC20.sol';
 
 contract StubTest is Test {
+  using LibStub for address;
   using LibStubERC20 for address;
 
   address stub;
-  IStubManager stubM;
-  IStubInspector stubI;
 
   address alice = makeAddr('alice');
   address bob = makeAddr('bob');
@@ -31,13 +31,10 @@ contract StubTest is Test {
   function setUp() public {
     stub = address(new Stub('TestERC20'));
     stub.initStubERC20('Test', 'TST', 18);
-
-    stubM = IStubManager(stub);
-    stubI = IStubInspector(stub);
   }
 
   function test_init() public {
-    assertEq(IStubViewer(stub).name(), 'TestERC20');
+    assertEq(stub.manager().name(), 'TestERC20');
 
     vm.startPrank(alice);
 
@@ -60,11 +57,11 @@ contract StubTest is Test {
 
     vm.stopPrank();
 
-    stubI.expectOk(IERC20.transfer.selector);
-    stubI.expectOk(abi.encodeCall(IERC20.transfer, (bob, 100)));
-    assertEq(stubI.getCallCount(IERC20.transfer.selector), 1);
-    assertEq(stubI.getCallCount(abi.encodeCall(IERC20.transfer, (bob, 100))), 1);
-    assertEq(stubI.getCallCount(abi.encodeCall(IERC20.transfer, (bob, 200))), 0);
+    stub.inspector().expectOk(IERC20.transfer.selector);
+    stub.inspector().expectOk(abi.encodeCall(IERC20.transfer, (bob, 100)));
+    assertEq(stub.inspector().getCallCount(IERC20.transfer.selector), 1);
+    assertEq(stub.inspector().getCallCount(abi.encodeCall(IERC20.transfer, (bob, 100))), 1);
+    assertEq(stub.inspector().getCallCount(abi.encodeCall(IERC20.transfer, (bob, 200))), 0);
   }
 
   function test_staticcall_simple() public {
@@ -78,18 +75,18 @@ contract StubTest is Test {
     vm.stopPrank();
 
     vm.expectRevert(_errNotACall(IERC20.balanceOf.selector, 'balanceOf'));
-    stubI.expectOk(IERC20.balanceOf.selector);
+    stub.inspector().expectOk(IERC20.balanceOf.selector);
 
     vm.expectRevert(_errNotACall(IERC20.balanceOf.selector, 'balanceOf'));
-    assertEq(stubI.getCallCount(IERC20.balanceOf.selector), 0);
+    assertEq(stub.inspector().getCallCount(IERC20.balanceOf.selector), 0);
 
     vm.expectRevert(_errNotACall(IERC20.balanceOf.selector, 'balanceOf'));
-    assertEq(stubI.getCallCount(abi.encodeCall(IERC20.balanceOf, (bob))), 0);
+    assertEq(stub.inspector().getCallCount(abi.encodeCall(IERC20.balanceOf, (bob))), 0);
   }
 
   function test_call_bubbling() public {
     bytes memory calldata_ = abi.encodeWithSignature('asdf(string)', 'input');
-    stubM.setOk(calldata_, abi.encode('output'));
+    stub.manager().setOk(calldata_, abi.encode('output'));
 
     // call 'asdf' with the account who has inspector and manager roles
     (bool ok, bytes memory ret) = stub.call(calldata_);
