@@ -10,7 +10,7 @@ interface IStubErrors {
   error NotMatchedBySig(bytes4 sig, bool revert_, uint256 value, IStubTypes.Log actual);
   error NotMatchedByArgs(bytes args, bool revert_, uint256 value, IStubTypes.Log actual);
 
-  error NotACall(bytes4 sig, string name);
+  error NotRegistered(bytes4 sig, string name);
   error NoCalls(bytes4 sig);
 
   error NotImplemented();
