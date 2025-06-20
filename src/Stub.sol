@@ -9,10 +9,11 @@ import { StubInspector } from './impl/StubInspector.sol';
 import { StubExecutor } from './impl/StubExecutor.sol';
 import { IStubEvents } from './interface/IStubEvents.sol';
 import { IStubErrors } from './interface/IStubErrors.sol';
+import { Versioned } from './lib/Versioned.sol';
 
 import { Address } from '@oz/utils/Address.sol';
 
-contract Stub is IStubEvents, StubStorage {
+contract Stub is IStubEvents, StubStorage, Versioned {
   /// @dev keccak256(abi.encodeWithSelector(IStubErrors.NotImplemented.selector))
   bytes32 private constant ERR_NOT_IMPLEMENTED = 0xdb12950338915ad5275770347f72282296a9ecc3bed09f9d1d23051c469e3fad;
 

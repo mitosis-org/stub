@@ -46,6 +46,11 @@ contract StubTest is Test {
     vm.stopPrank();
   }
 
+  function test_version() public view {
+    assertEq(Stub(payable(stub)).GIT_TAG(), '{{git_tag}}');
+    assertEq(Stub(payable(stub)).GIT_COMMIT(), '{{git_commit}}');
+  }
+
   function test_call_simple() public {
     stub.setRetERC20Transfer(bob, 100);
 
