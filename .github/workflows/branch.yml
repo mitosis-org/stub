@@ -18,9 +18,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_REPO_READER }}
-          submodules: recursive
 
       - name: Resolve dubious ownership
         run: git config --global --add safe.directory /__w/${{ env.REPO_NAME }}/${{ env.REPO_NAME }}
