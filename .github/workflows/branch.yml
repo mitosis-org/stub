@@ -63,9 +63,9 @@ jobs:
           sed \
             -e "s/{{git_tag}}/$(git describe --abbrev=0 --tags origin/main)/g" \
             -e "s/{{git_commit}}/$(git rev-parse HEAD)/g" \
-            src/libraries/Versioned.sol > src/libraries/Versioned.sol.tmp
+            src/lib/Versioned.sol > src/lib/Versioned.sol.tmp
 
-          mv src/libraries/Versioned.sol.tmp src/libraries/Versioned.sol
+          mv src/lib/Versioned.sol.tmp src/lib/Versioned.sol
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
