@@ -74,13 +74,13 @@ contract StubTest is Test {
 
     vm.stopPrank();
 
-    vm.expectRevert(_errNotACall(IERC20.balanceOf.selector, 'balanceOf'));
+    vm.expectRevert(_errNotRegistered(IERC20.balanceOf.selector, 'balanceOf'));
     stub.inspector().expectOk(IERC20.balanceOf.selector);
 
-    vm.expectRevert(_errNotACall(IERC20.balanceOf.selector, 'balanceOf'));
+    vm.expectRevert(_errNotRegistered(IERC20.balanceOf.selector, 'balanceOf'));
     assertEq(stub.inspector().getCallCount(IERC20.balanceOf.selector), 0);
 
-    vm.expectRevert(_errNotACall(IERC20.balanceOf.selector, 'balanceOf'));
+    vm.expectRevert(_errNotRegistered(IERC20.balanceOf.selector, 'balanceOf'));
     assertEq(stub.inspector().getCallCount(abi.encodeCall(IERC20.balanceOf, (bob))), 0);
   }
 
@@ -94,7 +94,7 @@ contract StubTest is Test {
     assertEq(ret, abi.encode('output'));
   }
 
-  function _errNotACall(bytes4 sig, string memory name) internal pure returns (bytes memory) {
-    return abi.encodeWithSelector(IStubErrors.NotACall.selector, sig, name);
+  function _errNotRegistered(bytes4 sig, string memory name) internal pure returns (bytes memory) {
+    return abi.encodeWithSelector(IStubErrors.NotRegistered.selector, sig, name);
   }
 }

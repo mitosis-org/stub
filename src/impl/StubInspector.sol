@@ -91,7 +91,7 @@ contract StubInspector is IStubInspector, StubViewer {
     StorageV1 storage $ = _getStorageV1();
 
     Func storage func = $.funcs[sig];
-    if (!func.isCall) _revertNotACall($, sig);
+    if (!func.isCall) _revertNotRegistered($, sig);
 
     Log[] storage logs = func.call_.logs;
     if (logs.length == 0) _revertNoCalls($, sig);
@@ -108,7 +108,7 @@ contract StubInspector is IStubInspector, StubViewer {
     StorageV1 storage $ = _getStorageV1();
 
     Func storage func = $.funcs[sig];
-    if (!func.isCall) _revertNotACall($, sig);
+    if (!func.isCall) _revertNotRegistered($, sig);
 
     Log[] storage logs = func.call_.logs;
     if (logs.length == 0) _revertNoCalls($, sig);
@@ -126,9 +126,9 @@ contract StubInspector is IStubInspector, StubViewer {
     console.log('<<<<<<<< TRACE <<<<<<<<<');
   }
 
-  function _revertNotACall(StorageV1 storage $, bytes4 sig) internal view {
+  function _revertNotRegistered(StorageV1 storage $, bytes4 sig) internal view {
     _doBeforeRevert($, sig);
-    revert IStubErrors.NotACall(sig, $.funcs[sig].name);
+    revert IStubErrors.NotRegistered(sig, $.funcs[sig].name);
   }
 
   function _revertNoCalls(StorageV1 storage $, bytes4 sig) internal view {
