@@ -3,14 +3,14 @@ src = "src"
 out = "out"
 libs = ["dependencies"]
 remappings = [
-    "@std=dependencies/forge-std-1.9.6/src",
-    "@solady=dependencies/solady-0.1.14/src",
-    "@oz=dependencies/@openzeppelin-contracts-5.2.0",
-    "@ozu=dependencies/@openzeppelin-contracts-upgradeable-5.2.0",
-    "forge-std/=dependencies/forge-std-1.9.6/src",
-    "solady/=dependencies/solady-0.1.14/src",
-    "@openzeppelin/contracts=dependencies/@openzeppelin-contracts-5.2.0",
-    "@openzeppelin/contracts-upgradeable=dependencies/@openzeppelin-contracts-upgradeable-5.2.0",
+    "@std=dependencies/forge-std-1.9.7/src",
+    "@solady=dependencies/solady-0.1.19/src",
+    "@oz=dependencies/@openzeppelin-contracts-5.3.0",
+    "@ozu=dependencies/@openzeppelin-contracts-upgradeable-5.3.0",
+    "forge-std/=dependencies/forge-std-1.9.7/src",
+    "solady/=dependencies/solady-0.1.19/src",
+    "@openzeppelin/contracts=dependencies/@openzeppelin-contracts-5.3.0",
+    "@openzeppelin/contracts-upgradeable=dependencies/@openzeppelin-contracts-upgradeable-5.3.0",
 ]
 
 [fmt]
@@ -25,9 +25,9 @@ remappings_regenerate = false
 remappings_location = "config"
 
 [dependencies]
-forge-std = "1.9.6"
-solady = "0.1.14"
-"@openzeppelin-contracts" = "5.2.0"
-"@openzeppelin-contracts-upgradeable" = "5.2.0"
+forge-std = "1.9.7"
+solady = "0.1.19"
+"@openzeppelin-contracts" = "5.3.0"
+"@openzeppelin-contracts-upgradeable" = "5.3.0"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
